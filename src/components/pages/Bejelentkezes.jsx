@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { useAuth } from '../components/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { Lock, Mail, LogIn } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const Bejelentkezes = () => {
     const [credentials, setCredentials] = useState({ email: '', password: '' });
@@ -26,7 +27,10 @@ const Bejelentkezes = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10">
+        <motion.div className="flex grow justify-center items-center content-center bg-gradient-to-br from-primary/10 to-secondary/10 p-5"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}>
             <div className="card w-full max-w-md bg-base-100 shadow-2xl">
                 <div className="card-body p-8">
                     <div className="text-center space-y-4 mb-8">
@@ -58,7 +62,7 @@ const Bejelentkezes = () => {
                                     placeholder="email@pelda.hu"
                                     className="input input-bordered pl-10 w-full"
                                     value={credentials.email}
-                                    onChange={(e) => setCredentials({...credentials, email: e.target.value})}
+                                    onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
                                     required
                                 />
                             </div>
@@ -75,7 +79,7 @@ const Bejelentkezes = () => {
                                     placeholder="••••••••"
                                     className="input input-bordered pl-10 w-full"
                                     value={credentials.password}
-                                    onChange={(e) => setCredentials({...credentials, password: e.target.value})}
+                                    onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
                                     required
                                 />
                             </div>
@@ -92,7 +96,7 @@ const Bejelentkezes = () => {
                     </form>
 
                     <div className="divider my-6">Még nincs fiókod?</div>
-                    
+
                     <Link
                         to="/regisztracio"
                         className="btn btn-outline btn-secondary w-full"
@@ -101,7 +105,7 @@ const Bejelentkezes = () => {
                     </Link>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 };
 

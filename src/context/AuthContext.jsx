@@ -3,26 +3,46 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 
 const AuthContext = createContext();
-const API_URL = 'http://localhost:8000';
+
+export const API_URL = `http://${window.location.host.split(":")[0]}:8000`;
+
+export const LIGHT = "light";
+export const DARK = "dark";
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [theme, setTheme] = useState(LIGHT);
+    const [termekMod, setTermekMod] = useState(null);
     const navigate = useNavigate();
+
+    const changeTheme = (theme) => {
+        localStorage.setItem("theme", theme);
+        setTheme(theme);
+        document.querySelector("link[rel~='icon']").href = theme == DARK ?
+            "./src/assets/VendoIcon.png" : "./src/assets/VendoIconBlack.png";
+    }
 
     useEffect(() => {
         const initAuth = async () => {
-            const token = localStorage.getItem('token');
-            const storedUser = localStorage.getItem('user');
+            const token = localStorage.getItem("token");
+            const storedUser = localStorage.getItem("user");
+            const theme = localStorage.getItem("theme");
+
+            if (theme)
+                changeTheme(theme);
+            else
+                changeTheme(DARK);
+
             if (token && storedUser) {
                 try {
                     // Token validáció a backenddel
-                    const response = await fetch(`${API_URL}/userapi/profil/${JSON.parse(storedUser).id}`, {
+                    const response = await fetch(`${API_URL}/userapi/profil/${JSON.parse(storedUser).user_id}`, {
                         headers: { Authorization: `Bearer ${token}` }
                     });
-                    
+
                     if (response.ok) {
                         setUser(JSON.parse(storedUser));
                     } else {
@@ -52,13 +72,13 @@ export const AuthProvider = ({ children }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
             });
-    
+
             const data = await handleResponse(response);
             localStorage.setItem('token', data.token);
-            const userData = { 
-                username: data.username, 
-                email, 
-                id: data.id, 
+            const userData = {
+                username: data.username,
+                email: data.email,
+                user_id: data.user_id,
                 token: data.token
             };
             localStorage.setItem('user', JSON.stringify(userData));
@@ -94,7 +114,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+        <AuthContext.Provider value={{ user, loading, login, register, logout, changeTheme, theme, termekMod, setTermekMod }}>
             {children}
         </AuthContext.Provider>
     );

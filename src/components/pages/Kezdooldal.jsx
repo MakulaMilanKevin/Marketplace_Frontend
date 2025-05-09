@@ -1,21 +1,34 @@
 import { useEffect, useState } from 'react';
-import TermekKartya from '../components/TermekKartya';
+import TermekKartya from '../TermekKartya';
 import { Loader2, AlertCircle, Search, Frown } from 'lucide-react';
-
-const API_URL = 'http://localhost:8000';
+import { API_URL, useAuth } from '../../context/AuthContext';
+import { motion } from 'framer-motion';
 
 const Kezdooldal = () => {
+  const { user } = useAuth();
+
   const [termekek, setTermekek] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredTermekek, setFilteredTermekek] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const [filtereredTermekekOther, setFiltereredTermekekOther] = useState([]);
+  const [filteredTermekekMine, setFilteredTermekekMine] = useState([]);
+
+  const [showSelf, setShowSelf] = useState(false);
+
+  const setSelf = (value) => {
+    setShowSelf(value.target.checked);
+    value.target.checked ?
+      setTermekek(filteredTermekekMine) :
+      setTermekek(filtereredTermekekOther);
+  }
+
   const fetchTermekek = async () => {
     try {
       setLoading(true);
       setError('');
-      console.log('Fetching products...');
       const response = await fetch(`${API_URL}/termekapi/alltermek`);
 
       const contentType = response.headers.get('content-type');
@@ -34,15 +47,39 @@ const Kezdooldal = () => {
       }
 
       const data = await response.json();
-      console.log('Received data:', data);
 
       if (!Array.isArray(data)) {
         console.error('Invalid data format received:', data);
         throw new Error('Érvénytelen adatformátum érkezett a szervertől.');
       }
-      console.log(data);
-      setTermekek(data);
-      setFilteredTermekek(data);
+
+      if (user) {
+        setFilteredTermekekMine([]);
+        setFiltereredTermekekOther([]);
+
+        let filtMine = [];
+        let filtOther = [];
+
+        for (let index = 0; index < data.length; index++) {
+          const element = data[index];
+
+          if (element.user_id == user.user_id)
+            filtMine.push(element);
+          else
+            filtOther.push(element);
+        }
+
+        setFilteredTermekekMine(filtMine);
+        setFiltereredTermekekOther(filtOther);
+
+        setTermekek(showSelf ? filtMine : filtOther);
+        setFilteredTermekek(showSelf ? filtMine : filtOther);
+      }
+      else {
+        setTermekek(data);
+        setFilteredTermekek(data);
+      }
+
       setLoading(false);
     } catch (error) {
       setError(error.message);
@@ -55,7 +92,7 @@ const Kezdooldal = () => {
 
   useEffect(() => {
     fetchTermekek();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     const lowerCaseSearchTerm = searchTerm.toLowerCase();
@@ -67,13 +104,16 @@ const Kezdooldal = () => {
   }, [searchTerm, termekek]);
 
   return (
-    <div>
-      <div className="mb-8 flex justify-center">
-        <div className="form-control w-full max-w-lg">
+    <motion.div className="flex grow p-5 gap-5 flex-col justify-start items-center content-center bg-gradient-to-br from-primary/10 to-secondary/10"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}>
+      <div className="mb-8 flex justify-center w-full w-max-[32rem]">
+        <div className="form-control items-center w-full gap-3">
           <label className="label">
             <span className="label-text">Termékek keresése</span>
           </label>
-          <div className="relative">
+          <div className="relative w-full max-w-7xl">
 
             <input
               type="text"
@@ -86,6 +126,15 @@ const Kezdooldal = () => {
               <Search className="h-5 w-5 text-gray-400" />
             </span>
           </div>
+          {
+            user &&
+            <div className="flex flex-row gap-3">
+              <p>Termékek</p>
+              <input type="checkbox" className="toggle"
+                onChange={setSelf} />
+              <p>Az én termékeim</p>
+            </div>
+          }
         </div>
       </div>
 
@@ -114,13 +163,15 @@ const Kezdooldal = () => {
           <p>Próbálj meg más kulcsszavakat, vagy nézz körül később!</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {
-            filteredTermekek.map((termek, key) => (<TermekKartya key={key} termek={termek} />))
-          }
+        <div className="flex grow relative w-full h-full overflow-y-auto">
+          <div className="grid absolute grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full h-full">
+            {
+              filteredTermekek.map((termek, key) => (<TermekKartya id={key} key={key} termek={termek} refresh={fetchTermekek} />))
+            }
+          </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

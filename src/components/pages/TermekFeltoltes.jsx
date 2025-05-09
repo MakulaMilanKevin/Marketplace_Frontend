@@ -1,15 +1,14 @@
 import { useState, useRef } from 'react';
-import { useAuth } from '../components/AuthContext';
+import { API_URL, useAuth } from '../../context/AuthContext';
 import { ImagePlus, XCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-
-const API_URL = 'http://localhost:8000';
+import { motion } from 'framer-motion';
 
 const TermekFeltoltes = () => {
-    const [form, setForm] = useState({ 
-        cim: '', 
-        description: '', 
-        ar: '' 
+    const [form, setForm] = useState({
+        cim: '',
+        description: '',
+        ar: ''
     });
     const [image, setImage] = useState(null);
     const [preview, setPreview] = useState(null);
@@ -55,7 +54,7 @@ const TermekFeltoltes = () => {
             });
 
             const data = await response.json();
-            
+
             if (!response.ok) {
                 throw new Error(data.message || 'Hiba a feltöltés során');
             }
@@ -73,11 +72,14 @@ const TermekFeltoltes = () => {
     };
 
     return (
-        <div className="min-h-screen bg-base-200 py-12">
-            <div className="max-w-3xl mx-auto px-4">
-                <div className="card bg-base-100 shadow-xl">
+        <motion.div className="flex grow gap-5 flex-col justify-center items-center content-center bg-gradient-to-br from-primary/10 to-secondary/10 p-5"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}>
+            <div className="max-w-[32rem] w-full mx-auto px-4">
+                <div className="card bg-base-100 shadow-xl w-full">
                     <div className="card-body">
-                        <h1 className="card-title text-3xl mb-6">Új termék feltöltése</h1>
+                        <h1 className="card-title text-3xl mb-2">Új termék feltöltése</h1>
 
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="form-control">
@@ -89,7 +91,7 @@ const TermekFeltoltes = () => {
                                     placeholder="Pl. Retro póló"
                                     className="input input-bordered"
                                     value={form.cim}
-                                    onChange={(e) => setForm({...form, cim: e.target.value})}
+                                    onChange={(e) => setForm({ ...form, cim: e.target.value })}
                                     required
                                 />
                             </div>
@@ -100,9 +102,9 @@ const TermekFeltoltes = () => {
                                 </label>
                                 <textarea
                                     placeholder="Termék részletei..."
-                                    className="textarea textarea-bordered h-32"
+                                    className="textarea textarea-bordered h-20"
                                     value={form.description}
-                                    onChange={(e) => setForm({...form, description: e.target.value})}
+                                    onChange={(e) => setForm({ ...form, description: e.target.value })}
                                     required
                                 />
                             </div>
@@ -116,14 +118,14 @@ const TermekFeltoltes = () => {
                                     placeholder="3000"
                                     className="input input-bordered"
                                     value={form.ar}
-                                    onChange={(e) => setForm({...form, ar: e.target.value})}
+                                    onChange={(e) => setForm({ ...form, ar: e.target.value })}
                                     min="1"
                                     required
                                 />
                             </div>
 
                             <div className="form-control">
-                                <div 
+                                <div
                                     className="border-2 border-dashed rounded-xl p-6 text-center cursor-pointer hover:border-primary transition-colors"
                                     onClick={() => fileInput.current.click()}
                                 >
@@ -136,9 +138,9 @@ const TermekFeltoltes = () => {
                                     />
                                     {preview ? (
                                         <div className="relative">
-                                            <img 
-                                                src={preview} 
-                                                alt="Előnézet" 
+                                            <img
+                                                src={preview}
+                                                alt="Előnézet"
                                                 className="max-h-64 mx-auto rounded-lg"
                                             />
                                             <button
@@ -163,8 +165,8 @@ const TermekFeltoltes = () => {
                                 </div>
                             </div>
 
-                            <button 
-                                type="submit" 
+                            <button
+                                type="submit"
                                 className="btn btn-primary w-full mt-6"
                                 disabled={loading}
                             >
@@ -176,7 +178,7 @@ const TermekFeltoltes = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 };
 
